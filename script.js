@@ -212,16 +212,23 @@ function buildRankCard(emp, idx, globalIdx) {
     const d      = emp[k.key];
     const pctVal = d.pct_acv ? (d.pct_acv * 100).toFixed(1) + '%' : '0%';
     const barFill = Math.max(0, Math.min(100, (d.pct_acv || 0) * 100));
+    const momPct  = d.mom != null ? (d.mom * 100).toFixed(1) + '%' : '—';
+    const momPos  = d.mom > 0;
+    const momNeg  = d.mom < 0;
     return `
       <div class="kpi-detail-card">
         <div class="kd-header">
           <span class="kd-name">${k.name}</span>
           <span class="kd-weight">Bobot ${k.weight_label || k.w}</span>
         </div>
+        <div class="kd-row"><span class="kd-row-label">M-1</span><span class="kd-row-val">${d.m1 != null ? d.m1.toLocaleString('id-ID', { maximumFractionDigits: 1 }) : '—'}</span></div>
+        <div class="kd-row"><span class="kd-row-label">M (Acv)</span><span class="kd-row-val ${d.acv > 0 ? 'pos' : ''}">${d.acv.toLocaleString('id-ID', { maximumFractionDigits: 1 })}</span></div>
+        <div class="kd-row"><span class="kd-row-label">MoM</span><span class="kd-row-val ${momPos ? 'pos' : momNeg ? 'neg' : ''}">${momPos ? '+' : ''}${momPct}</span></div>
+        <div class="kd-row"><span class="kd-row-label">Gap MoM</span><span class="kd-row-val ${d.gap_mom < 0 ? 'neg' : d.gap_mom > 0 ? 'pos' : ''}">${d.gap_mom != null ? (d.gap_mom > 0 ? '+' : '') + d.gap_mom.toLocaleString('id-ID', { maximumFractionDigits: 1 }) : '—'}</span></div>
+        <div class="kd-divider"></div>
         <div class="kd-row"><span class="kd-row-label">Target</span><span class="kd-row-val">${d.target.toLocaleString('id-ID', { maximumFractionDigits: 1 })}</span></div>
-        <div class="kd-row"><span class="kd-row-label">Acv</span><span class="kd-row-val ${d.acv > 0 ? 'pos' : ''}">${d.acv.toLocaleString('id-ID', { maximumFractionDigits: 1 })}</span></div>
         <div class="kd-row"><span class="kd-row-label">% Acv</span><span class="kd-row-val ${d.pct_acv > 0 ? 'pos' : 'neg'}">${pctVal}</span></div>
-        <div class="kd-row"><span class="kd-row-label">GAP</span><span class="kd-row-val ${d.gap < 0 ? 'neg' : 'pos'}">${d.gap.toLocaleString('id-ID', { maximumFractionDigits: 1 })}</span></div>
+        <div class="kd-row"><span class="kd-row-label">GAP Target</span><span class="kd-row-val ${d.gap < 0 ? 'neg' : 'pos'}">${d.gap.toLocaleString('id-ID', { maximumFractionDigits: 1 })}</span></div>
         <div class="kd-row"><span class="kd-row-label">Nilai</span><span class="kd-row-val">${fmt(d.nilai, 4)}</span></div>
         ${buildKpiBar(barFill / 100, k.color)}
       </div>
@@ -325,7 +332,7 @@ function renderRankList() {
     return matchToko && matchSearch;
   });
 
-  document.getElementById('rankCount').textContent = filtered.length + ' Shift';
+  document.getElementById('rankCount').textContent = filtered.length + ' karyawan';
 
   if (filtered.length === 0) {
     list.innerHTML = '<div class="no-data">Tidak ada data yang cocok.</div>';
@@ -441,6 +448,9 @@ function buildIndividualView(emp, containerId) {
     const pctNum = (d.pct_acv || 0) * 100;
     const barW   = Math.max(0, Math.min(100, pctNum));
     const barColor = pctNum >= 100 ? '#6ee7b7' : pctNum >= 50 ? '#fbbf24' : '#f87171';
+    const momPct   = d.mom != null ? (d.mom * 100).toFixed(1) + '%' : '—';
+    const momColor = d.mom > 0 ? 'var(--accent)' : d.mom < 0 ? 'var(--red)' : 'var(--text3)';
+    const gapMomColor = d.gap_mom > 0 ? 'var(--accent)' : d.gap_mom < 0 ? 'var(--red)' : 'var(--text3)';
     return `
       <div class="modal-kpi-item">
         <div class="mki-header">
@@ -448,6 +458,20 @@ function buildIndividualView(emp, containerId) {
           <span class="mki-weight">${k.weight_label || k.w}</span>
         </div>
         <div class="mki-big ${d.acv > 0 ? 'pos' : d.acv < 0 ? 'neg' : 'zero'}">${d.acv.toLocaleString('id-ID', { maximumFractionDigits: 1 })}</div>
+        <div class="mki-mom-row">
+          <div class="mki-mom-item">
+            <span class="mki-mom-label">M-1</span>
+            <span class="mki-mom-val">${d.m1 != null ? d.m1.toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</span>
+          </div>
+          <div class="mki-mom-item">
+            <span class="mki-mom-label">MoM</span>
+            <span class="mki-mom-val" style="color:${momColor}">${d.mom > 0 ? '+' : ''}${momPct}</span>
+          </div>
+          <div class="mki-mom-item">
+            <span class="mki-mom-label">Gap MoM</span>
+            <span class="mki-mom-val" style="color:${gapMomColor}">${d.gap_mom != null ? (d.gap_mom > 0 ? '+' : '') + d.gap_mom.toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</span>
+          </div>
+        </div>
         <div class="mki-detail">
           <div class="mki-detail-item">
             <span class="mki-dl">Target</span>
@@ -458,7 +482,7 @@ function buildIndividualView(emp, containerId) {
             <span class="mki-dv">${pctNum.toFixed(1)}%</span>
           </div>
           <div class="mki-detail-item">
-            <span class="mki-dl">GAP</span>
+            <span class="mki-dl">GAP Target</span>
             <span class="mki-dv" style="color:${d.gap < 0 ? 'var(--red)' : 'var(--accent)'}">${d.gap.toLocaleString('id-ID', { maximumFractionDigits: 1 })}</span>
           </div>
           <div class="mki-detail-item">

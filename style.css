@@ -425,12 +425,102 @@ body {
 
 /* ── RESPONSIVE ──────────────────────────────────────── */
 @media (max-width: 768px) {
-   .header-right { display: flex; gap: 2px; flex-direction: column; }
-  .container  { padding: 1rem; }
-  .rank-card-top { grid-template-columns: 44px 1fr auto; }
-  .kpi-mini, .score-bar-wrap { display: none; }
-  .podium-grid    { grid-template-columns: 1fr; }
-  .modal-kpi-grid { grid-template-columns: 1fr; }
-  .modal-summary-row { grid-template-columns: repeat(2, 1fr); }
-  .podium-card.p1 { order: -1; }
+
+  .header-right {
+    display: flex;
+    gap: 2px;
+    flex-direction: column;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+
+  .rank-card-top {
+    grid-template-columns: 44px 1fr auto;
+  }
+
+  .kpi-mini,
+  .score-bar-wrap {
+    display: none;
+  }
+
+  .podium-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-summary-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .podium-card.p1 {
+    order: -1;
+  }
+
+  /* FIX FULL MOBILE MODAL */
+  .modal-overlay {
+    padding: 0 !important;
+    align-items: center;
+  }
+
+  .modal {
+    width: 97vw !important;
+    height: 98dvh;
+    border-radius: 15px !important;
+    margin: 0 !important;
+    border-left: none;
+    border-right: none;
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+}
+
+/* ── M-1 / MoM / Gap MoM ──────────────────────────── */
+.kd-divider {
+  border: none;
+  border-top: 0.5px solid var(--border);
+  margin: 6px 0;
+}
+
+.mki-mom-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  background: var(--bg4);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r2);
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+.mki-mom-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.mki-mom-label {
+  font-size: 9px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  font-weight: 600;
+}
+
+.mki-mom-val {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text);
 }
