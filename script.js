@@ -488,12 +488,11 @@ function buildEraGroups() {
       `;
     }).join('');
 
-    // ── FINAL RENDER ──
+    // ── FINAL RENDER DENGAN BUTTON TOGGLE ──
     return `
-      <div class="eg-card" style="--toko-color:${color}">
-
-        <!-- STORE HEADER -->
-        <div class="eg-header">
+      <div class="eg-card collapsed" style="--toko-color:${color}">
+        <!-- STORE HEADER dengan Tombol Toggle -->
+        <div class="eg-header collapsed">
           <div class="eg-header-left">
             <div class="eg-toko-badge" style="background:${color}22;border-color:${color}55;color:${color}">
               ${toko.replace('ERA ','')}
@@ -504,110 +503,109 @@ function buildEraGroups() {
             </div>
           </div>
 
-          <!-- OVERALL PROGRESS BAR -->
-          <div class="eg-overall-wrap">
-            <div class="eg-overall-label">
-              <span>Overall ACV</span>
-              <span style="color:${overallColor};font-weight:700">${(overallPct * 100).toFixed(1)}%</span>
-            </div>
-            <div class="eg-overall-bar">
-              <div class="eg-overall-fill" style="width:${overallBarW}%;background:${overallColor}"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SUMMARY CHIPS -->
-        <div class="eg-chips">
-          <div class="eg-chip">
-            <div class="eg-chip-label">Avg Score</div>
-            <div class="eg-chip-val" style="color:${avgScore >= 0 ? 'var(--accent)' : 'var(--red)'}">
-              ${fmtPct(avgScore)}
-            </div>
-          </div>
-          <div class="eg-chip">
-            <div class="eg-chip-label">Best Rank</div>
-            <div class="eg-chip-val" style="color:var(--gold)">
-              ${bestRank ? '#' + bestRank : '—'}
-            </div>
-          </div>
-          <div class="eg-chip">
-            <div class="eg-chip-label">Punishment</div>
-            <div class="eg-chip-val" style="color:${punishCount > 0 ? 'var(--red)' : 'var(--text3)'}">
-              ${punishCount}
-            </div>
-          </div>
-          <div class="eg-chip">
-            <div class="eg-chip-label">Kebersihan</div>
-            <div class="eg-chip-val eg-chip-keb">
-              <span style="color:#6ee7b7">A:${kebA}</span>
-              <span class="eg-keb-dot">·</span>
-              <span style="color:#fbbf24">B:${kebB}</span>
-              <span class="eg-keb-dot">·</span>
-              <span style="color:#f87171">C:${kebC}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- KPI TABLE -->
-        <div class="eg-section-label">Rekapitulasi KPI</div>
-        <div class="eg-kpi-table">
-          <div class="eg-kpi-table-head">
-            <div class="eg-kth eg-kth-name">Kategori</div>
-            <div class="eg-kth">M-1</div>
-            <div class="eg-kth">ACV</div>
-            <div class="eg-kth">Target</div>
-            <div class="eg-kth">MoM</div>
-            <div class="eg-kth">Gap MoM</div>
-            <div class="eg-kth">Gap Target</div>
-            <div class="eg-kth">ACV%</div>
-          </div>
-          <div class="eg-kpi-rows">
-            ${kpiRows}
-          </div>
-        </div>
-
-        <!-- KPI CARDS (Mobile only) -->
-        <div class="eg-kpi-cards-mobile">
-          ${kpis.map(k => {
-            const totalM1     = emps.reduce((s,e) => s + (e[k.key]?.m1     || 0), 0);
-            const totalAcv    = emps.reduce((s,e) => s + (e[k.key]?.acv    || 0), 0);
-            const totalTarget = emps.reduce((s,e) => s + (e[k.key]?.target || 0), 0);
-            const totalGap    = emps.reduce((s,e) => s + (e[k.key]?.gap    || 0), 0);
-            const totalGapMom = emps.reduce((s,e) => s + (e[k.key]?.gap_mom || 0), 0);
-            const mom = totalM1 > 0 ? (totalAcv - totalM1) / totalM1 : 0;
-            const pct = totalTarget > 0 ? totalAcv / totalTarget : 0;
-            const barW = Math.max(0, Math.min(100, pct * 100));
-            const barColor = pct >= 1 ? '#6ee7b7' : pct >= 0.5 ? '#fbbf24' : '#f87171';
-            return `
-              <div class="eg-kpi-mcard">
-                <div class="eg-kpi-mcard-head">
-                  <span class="eg-kpi-dot" style="background:${k.color}"></span>
-                  <span class="eg-kpi-mcard-name">${k.name}</span>
-                </div>
-                <div class="eg-kpi-mcard-grid">
-                  <div class="eg-kpi-mcard-item"><span>M-1</span><strong>${totalM1.toLocaleString('id-ID')}</strong></div>
-                  <div class="eg-kpi-mcard-item"><span>Target</span><strong>${totalTarget.toLocaleString('id-ID')}</strong></div>
-                  <div class="eg-kpi-mcard-item"><span>Acv</span><strong>${totalAcv.toLocaleString('id-ID')}</strong></div>
-                  <div class="eg-kpi-mcard-item"><span>Gap MoM</span><strong class="${totalGapMom >= 0 ? 'pos' : 'neg'}">${totalGapMom >= 0 ? '+' : ''}${totalGapMom.toLocaleString('id-ID')}</strong></div>
-                  <div class="eg-kpi-mcard-item last"><span>Gap Target</span><strong class="${totalGap >= 0 ? 'pos' : 'neg'}">${totalGap >= 0 ? '+' : ''}${totalGap.toLocaleString('id-ID')}</strong></div>
-                  <div class="eg-kpi-mcard-item last"><span>Acv%</span><strong class="${totalGap >= 0 ? 'pos' : 'neg'}">${(pct * 100).toFixed(1)}%</strong></div>
-                </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="eg-overall-wrap">
+              <div class="eg-overall-label">
+                <span>Overall ACV</span>
+                <span style="color:${overallColor};font-weight:700">${(overallPct * 100).toFixed(1)}%</span>
               </div>
-            `;
-          }).join('')}
+              <div class="eg-overall-bar">
+                <div class="eg-overall-fill" style="width:${overallBarW}%;background:${overallColor}"></div>
+              </div>
+            </div>
+            <button class="eg-toggle-btn" onclick="toggleEraCard(this)">▼</button>
+          </div>
         </div>
 
-        <!-- EMPLOYEES -->
-        <div class="eg-section-label">Karyawan</div>
-        <div class="eg-emp-grid">
-          ${empCards}
-        </div>
+        <!-- KONTEN YANG BISA DI-COLLAPSE -->
+        <div class="eg-collapsible-content">
+          <div class="eg-chips">
+            <div class="eg-chip">
+              <div class="eg-chip-label">Avg Score</div>
+              <div class="eg-chip-val" style="color:${avgScore >= 0 ? 'var(--accent)' : 'var(--red)'}">
+                ${fmtPct(avgScore)}
+              </div>
+            </div>
+            <div class="eg-chip">
+              <div class="eg-chip-label">Best Rank</div>
+              <div class="eg-chip-val" style="color:var(--gold)">
+                ${bestRank ? '#' + bestRank : '—'}
+              </div>
+            </div>
+            <div class="eg-chip">
+              <div class="eg-chip-label">Punishment</div>
+              <div class="eg-chip-val" style="color:${punishCount > 0 ? 'var(--red)' : 'var(--text3)'}">
+                ${punishCount}
+              </div>
+            </div>
+            <div class="eg-chip">
+              <div class="eg-chip-label">Kebersihan</div>
+              <div class="eg-chip-val eg-chip-keb">
+                <span style="color:#6ee7b7">A:${kebA}</span>
+                <span class="eg-keb-dot">·</span>
+                <span style="color:#fbbf24">B:${kebB}</span>
+                <span class="eg-keb-dot">·</span>
+                <span style="color:#f87171">C:${kebC}</span>
+              </div>
+            </div>
+          </div>
 
+          <div class="eg-section-label">Rekapitulasi KPI</div>
+          <div class="eg-kpi-table">
+            <div class="eg-kpi-table-head">
+              <div class="eg-kth eg-kth-name">Kategori</div>
+              <div class="eg-kth">M-1</div>
+              <div class="eg-kth">ACV</div>
+              <div class="eg-kth">Target</div>
+              <div class="eg-kth">MoM</div>
+              <div class="eg-kth">Gap MoM</div>
+              <div class="eg-kth">Gap Target</div>
+              <div class="eg-kth">ACV%</div>
+            </div>
+            <div class="eg-kpi-rows">
+              ${kpiRows}
+            </div>
+          </div>
+
+          <div class="eg-kpi-cards-mobile">
+            ${kpis.map(k => {
+              const totalM1     = emps.reduce((s,e) => s + (e[k.key]?.m1     || 0), 0);
+              const totalAcv    = emps.reduce((s,e) => s + (e[k.key]?.acv    || 0), 0);
+              const totalTarget = emps.reduce((s,e) => s + (e[k.key]?.target || 0), 0);
+              const totalGap    = emps.reduce((s,e) => s + (e[k.key]?.gap    || 0), 0);
+              const totalGapMom = emps.reduce((s,e) => s + (e[k.key]?.gap_mom || 0), 0);
+              const mom = totalM1 > 0 ? (totalAcv - totalM1) / totalM1 : 0;
+              const pct = totalTarget > 0 ? totalAcv / totalTarget : 0;
+              const barW = Math.max(0, Math.min(100, pct * 100));
+              const barColor = pct >= 1 ? '#6ee7b7' : pct >= 0.5 ? '#fbbf24' : '#f87171';
+              return `
+                <div class="eg-kpi-mcard">
+                  <div class="eg-kpi-mcard-head">
+                    <span class="eg-kpi-dot" style="background:${k.color}"></span>
+                    <span class="eg-kpi-mcard-name">${k.name}</span>
+                  </div>
+                  <div class="eg-kpi-mcard-grid">
+                    <div class="eg-kpi-mcard-item"><span>M-1</span><strong>${totalM1.toLocaleString('id-ID')}</strong></div>
+                    <div class="eg-kpi-mcard-item"><span>Target</span><strong>${totalTarget.toLocaleString('id-ID')}</strong></div>
+                    <div class="eg-kpi-mcard-item"><span>Acv</span><strong>${totalAcv.toLocaleString('id-ID')}</strong></div>
+                    <div class="eg-kpi-mcard-item"><span>Gap MoM</span><strong class="${totalGapMom >= 0 ? 'pos' : 'neg'}">${totalGapMom >= 0 ? '+' : ''}${totalGapMom.toLocaleString('id-ID')}</strong></div>
+                    <div class="eg-kpi-mcard-item last"><span>Gap Target</span><strong class="${totalGap >= 0 ? 'pos' : 'neg'}">${totalGap >= 0 ? '+' : ''}${totalGap.toLocaleString('id-ID')}</strong></div>
+                    <div class="eg-kpi-mcard-item last"><span>Acv%</span><strong class="${totalGap >= 0 ? 'pos' : 'neg'}">${(pct * 100).toFixed(1)}%</strong></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="eg-section-label">Karyawan</div>
+          <div class="eg-emp-grid">
+            ${empCards}
+          </div>
+        </div>
       </div>
     `;
 
   }).join('');
-
 }
 
 // ── INDIVIDUAL SELECT ─────────────────────────────────
@@ -804,6 +802,22 @@ function switchTab(name, e) {
   document.getElementById('tab-' + name).classList.add('active');
 }
 
+// ── TOGGLE ERA CARD (SEDERHANA) ──────────────────────
+function toggleEraCard(buttonElement) {
+  // Cari card terdekat
+  const card = buttonElement.closest('.eg-card');
+  if (!card) return;
+  
+  // Toggle class collapsed
+  if (card.classList.contains('collapsed')) {
+    card.classList.remove('collapsed');
+    buttonElement.textContent = '▲';
+  } else {
+    card.classList.add('collapsed');
+    buttonElement.textContent = '▼';
+  }
+}
+
 window.switchTab = switchTab;
 window.filterByToko = filterByToko;
 window.filterBySearch = filterBySearch;
@@ -812,3 +826,5 @@ window.openModal = openModal;
 window.closeModal = closeModal;
 window.closeModalIfBg = closeModalIfBg;
 window.showIndividual = showIndividual;
+
+window.toggleEraCard = toggleEraCard;
