@@ -325,7 +325,7 @@ function renderRankList() {
     return matchToko && matchSearch;
   });
 
-  document.getElementById('rankCount').textContent = filtered.length + ' karyawan';
+  document.getElementById('rankCount').textContent = filtered.length + ' Shift';
 
   if (filtered.length === 0) {
     list.innerHTML = '<div class="no-data">Tidak ada data yang cocok.</div>';
