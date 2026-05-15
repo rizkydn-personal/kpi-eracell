@@ -425,6 +425,7 @@ body {
 
 /* ── RESPONSIVE ──────────────────────────────────────── */
 @media (max-width: 768px) {
+   .header-right { display: flex; gap: 2px; flex-direction: column; }
   .container  { padding: 1rem; }
   .rank-card-top { grid-template-columns: 44px 1fr auto; }
   .kpi-mini, .score-bar-wrap { display: none; }
