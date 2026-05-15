@@ -561,7 +561,7 @@ function buildIndividualView(emp, containerId) {
     </div>
     <div class="modal-kpi-grid">${kpiCards}</div>
     <div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:1rem;font-size:12px;color:var(--text3);">
-      ℹ️ Data di atas berdasarkan kondisi bulan Mei 2026 (Update 7 Mei 2026). GAP = Acv − Target.
+      ℹ️ Data di atas berdasarkan kondisi bulan ${meta.bulan} (Update ${meta.update}). GAP = Acv − Target/Mom.
     </div>
   `;
 }
