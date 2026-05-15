@@ -361,8 +361,8 @@ body {
 .mki-big.zero { color: var(--text3); }
 .mki-big.pos  { color: var(--accent); }
 .mki-big.neg  { color: var(--red); }
-.mki-detail   { display: flex; gap: 16px; margin-top: 8px; }
-.mki-detail-item { display: flex; flex-direction: column; }
+.mki-detail   { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: center; margin-top: 8px; }
+.mki-detail-item { display: flex; flex-direction: column; align-items: center; }
 .mki-dl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.3px; }
 .mki-dv { font-size: 13px; font-weight: 500; font-family: 'JetBrains Mono', monospace; color: var(--text); }
 
