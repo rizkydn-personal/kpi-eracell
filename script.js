@@ -229,7 +229,7 @@ function buildRankCard(emp, idx, globalIdx) {
         <div class="kd-row"><span class="kd-row-label">Target</span><span class="kd-row-val">${d.target.toLocaleString('id-ID', { maximumFractionDigits: 1 })}</span></div>
         <div class="kd-row"><span class="kd-row-label">% Acv</span><span class="kd-row-val ${d.pct_acv > 0 ? 'pos' : 'neg'}">${pctVal}</span></div>
         <div class="kd-row"><span class="kd-row-label">GAP Target</span><span class="kd-row-val ${d.gap < 0 ? 'neg' : 'pos'}">${d.gap.toLocaleString('id-ID', { maximumFractionDigits: 1 })}</span></div>
-        <div class="kd-row"><span class="kd-row-label">Nilai</span><span class="kd-row-val">${fmt(d.nilai, 4)}</span></div>
+        <div class="kd-row"><span class="kd-row-label">Nilai</span><span class="kd-row-val">${fmtPct(d.nilai, 4)}</span></div>
         ${buildKpiBar(barFill / 100, k.color)}
       </div>
     `;
