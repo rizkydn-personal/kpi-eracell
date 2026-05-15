@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KPI Dashboard — Era Cellular Mei 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="logo.png">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">
+        <img src="logo.png" alt="EC">
+      </div>
+      <div>
+        <div class="logo-text">Era Cellular</div>
+        <div class="logo-sub">KPI Dashboard</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="update-tag" id="updateTag"></span>
+      <span class="badge-month" id="badgeMonth"></span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- SUMMARY STATS -->
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('rank', event)">🏆 Ranking</button>
+    <button class="tab-btn" onclick="switchTab('era', event)">🏪 Per Toko</button>
+    <button class="tab-btn" onclick="switchTab('individual', event)">👤 Individual</button>
+  </div>
+
+  <!-- TAB: RANKING -->
+  <div class="tab-content active" id="tab-rank">
+    <!-- PODIUM TOP 3 -->
+    <div class="podium-section">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Podium Teratas</div>
+          <div class="section-sub">3 Shift dengan score akhir tertinggi</div>
+        </div>
+      </div>
+      <div class="podium-grid" id="podiumGrid"></div>
+    </div>
+
+    <!-- FILTER & SEARCH -->
+    <div class="filter-bar">
+      <span class="filter-label">Filter:</span>
+      <button class="filter-btn active" onclick="filterByToko('all', event)">Semua</button>
+      <button class="filter-btn" onclick="filterByToko('ERA 1', event)">ERA 1</button>
+      <button class="filter-btn" onclick="filterByToko('ERA 2', event)">ERA 2</button>
+      <button class="filter-btn" onclick="filterByToko('ERA 3', event)">ERA 3</button>
+      <button class="filter-btn" onclick="filterByToko('ERA 4', event)">ERA 4</button>
+      <button class="filter-btn" onclick="filterByToko('ERA 5', event)">ERA 5</button>
+      <button class="filter-btn" onclick="filterByToko('ERA 6', event)">ERA 6</button>
+      <button class="filter-btn" onclick="filterByToko('ERA 7', event)">ERA 7</button>
+      <button class="filter-btn" onclick="filterByToko('ERA 8', event)">ERA 8</button>
+      <button class="filter-btn" onclick="filterByToko('ERA 9', event)">ERA 9</button>
+      <div class="filter-divider"></div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Cari nama..." id="searchInput" oninput="filterBySearch()">
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div>
+        <div class="section-title">Leaderboard Shift</div>
+        <div class="section-sub" id="rankSubtitle">Semua Shift diurutkan berdasarkan score akhir</div>
+      </div>
+      <div class="section-sub" id="rankCount"></div>
+    </div>
+
+    <div class="rank-list" id="rankList"></div>
+  </div>
+
+  <!-- TAB: PER ERA -->
+  <div class="tab-content" id="tab-era">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Data Per Toko</div>
+        <div class="section-sub">Overview setiap toko beserta karyawan shift 1 &amp; 2</div>
+      </div>
+    </div>
+    <div id="eraGroups"></div>
+  </div>
+
+  <!-- TAB: INDIVIDUAL -->
+  <div class="tab-content" id="tab-individual">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Kalkulator Individual</div>
+        <div class="section-sub">Detail KPI perorangan</div>
+      </div>
+    </div>
+    <div style="margin-bottom: 1rem;">
+      <div class="filter-bar" style="margin-bottom: 0;">
+        <span class="filter-label">Pilih Karyawan:</span>
+        <select id="empSelect" onchange="showIndividual()"
+          style="background:var(--bg3);border:0.5px solid var(--border2);color:var(--text);padding:7px 14px;border-radius:var(--r2);font-family:inherit;font-size:13px;outline:none;cursor:pointer;">
+          <option value="">— Pilih nama —</option>
+        </select>
+      </div>
+    </div>
+    <div id="individualPanel"></div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalIfBg(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-meta" id="modalMeta"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
