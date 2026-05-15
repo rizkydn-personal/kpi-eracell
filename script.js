@@ -579,3 +579,12 @@ function switchTab(name, e) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
 }
+
+window.switchTab = switchTab;
+window.filterByToko = filterByToko;
+window.filterBySearch = filterBySearch;
+window.toggleExpand = toggleExpand;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.closeModalIfBg = closeModalIfBg;
+window.showIndividual = showIndividual;
