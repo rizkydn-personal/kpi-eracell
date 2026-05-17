@@ -118,8 +118,9 @@ function getRankBadgeClass(rank) {
 }
 
 function getScoreColor(score) {
-  if (score > 0)     return 'green';
-  if (score < -0.05) return 'red';
+  if (score < 70)     return 'green';
+  if (score < 30)     return 'yellow';
+  if (score < 20) return 'red';
   return 'neutral';
 }
 
@@ -252,7 +253,7 @@ function buildRankCard(emp, idx, globalIdx) {
             <span>${fmtPct(emp.score_akhir)}</span>
           </div>
           <div class="score-bar-track">
-            <div class="score-bar-fill" style="width:${Math.max(2, barW)}%;background:${emp.score_akhir >= 0 ? '#6ee7b7' : '#f87171'}"></div>
+            <div class="score-bar-fill" style="width:${barW}%;background:${emp.score_akhir >= 0 ? '#6ee7b7' : '#f87171'}"></div>
           </div>
         </div>
         <div class="kpi-mini">
@@ -304,10 +305,6 @@ function buildRankCard(emp, idx, globalIdx) {
           </div>
         </div>
         <div class="detail-grid">${detailCards}</div>
-        <button style="background:rgba(110,231,183,0.1);border:0.5px solid rgba(110,231,183,0.3);color:var(--accent);padding:8px 16px;border-radius:var(--r2);font-family:inherit;font-size:12px;cursor:pointer;"
-          onclick="openModal(${globalIdx})">
-          Lihat Detail Lengkap ↗
-        </button>
       </div>
     </div>
   `;
@@ -332,7 +329,7 @@ function renderRankList() {
     return matchToko && matchSearch;
   });
 
-  document.getElementById('rankCount').textContent = filtered.length + ' karyawan';
+  document.getElementById('rankCount').textContent = filtered.length + ' Shift';
 
   if (filtered.length === 0) {
     list.innerHTML = '<div class="no-data">Tidak ada data yang cocok.</div>';
@@ -359,9 +356,10 @@ function filterBySearch() {
 }
 
 // ── BUILD ERA GROUPS ──────────────────────────────────
-function buildEraGroups() {
+let expandedEraCards = new Set();
 
-  const tokos = [...new Set(DATA.map(d => d.toko))].sort();
+function buildEraGroups() {
+  const tokosRaw = [...new Set(DATA.map(d => d.toko))].sort();
   const container = document.getElementById('eraGroups');
 
   const kpis = KPI_DISPLAY.length ? KPI_DISPLAY : [
@@ -372,12 +370,44 @@ function buildEraGroups() {
     { key: 'aksesoris',      name: 'Aksesoris',        color: '#fb923c' },
   ];
 
-  container.innerHTML = tokos.map(toko => {
+  // ── Hitung overall ACV% tiap toko untuk menentukan rank toko ──
+  const tokoStats = tokosRaw.map(toko => {
+    const emps = DATA.filter(d => d.toko === toko);
+    let totalAcv = 0, totalTarget = 0;
+    kpis.forEach(k => {
+      totalAcv    += emps.reduce((s,e) => s + (e[k.key]?.acv    || 0), 0);
+      totalTarget += emps.reduce((s,e) => s + (e[k.key]?.target || 0), 0);
+    });
+    return { toko, overallPct: totalTarget > 0 ? totalAcv / totalTarget : 0 };
+  });
 
-    const emps  = DATA.filter(d => d.toko === toko);
-    const color = TOKO_COLORS[toko] || '#888';
+  // Urutkan dari overall ACV% tertinggi → rank toko #1, #2, dst.
+  tokoStats.sort((a, b) => b.overallPct - a.overallPct);
+  const tokos = tokoStats.map(t => t.toko);
 
-    // ── SORTING ──
+  // Palette warna per rank toko
+  const tokoRankPalette = [
+    { fg: '#fbbf24', bg: 'rgba(251,191,36,0.18)',  bd: 'rgba(251,191,36,0.50)',  cardBd: 'rgba(251,191,36,0.35)', headerBg: 'rgba(251,191,36,0.05)'  },
+    { fg: '#e2e8f0', bg: 'rgba(226,232,240,0.14)', bd: 'rgba(226,232,240,0.40)', cardBd: 'rgba(226,232,240,0.28)', headerBg: 'rgba(226,232,240,0.03)' },
+    { fg: '#f59e0b', bg: 'rgba(217,119,6,0.18)',   bd: 'rgba(217,119,6,0.50)',   cardBd: 'rgba(217,119,6,0.30)',  headerBg: 'rgba(217,119,6,0.05)'  },
+  ];
+
+  const medalLabel = ['🥇', '🥈', '🥉'];
+
+  container.innerHTML = tokos.map((toko, tokoRankIdx) => {
+    const tokoRank  = tokoRankIdx + 1;
+    const pal       = tokoRank <= 3 ? tokoRankPalette[tokoRank - 1] : null;
+    const emps      = DATA.filter(d => d.toko === toko);
+    const tokoColor = TOKO_COLORS[toko] || '#888';
+
+    // Badge & card colors berdasarkan rank toko
+    const color     = pal ? pal.fg : tokoColor;
+    const badgeBg   = pal ? pal.bg : tokoColor + '22';
+    const badgeBd   = pal ? pal.bd : tokoColor + '44';
+    const cardBd    = pal ? pal.cardBd : 'var(--border)';
+    const headerBg  = pal ? pal.headerBg : 'transparent';
+
+    // ── SORTING by rank ──
     const ranked_emps   = emps.filter(e => e.rank_akhir > 0).sort((a,b) => a.rank_akhir - b.rank_akhir);
     const unranked_emps = emps.filter(e => e.rank_akhir === 0);
     const sortedEmps    = [...ranked_emps, ...unranked_emps];
@@ -391,220 +421,153 @@ function buildEraGroups() {
     const kebB        = emps.filter(e => e.kebersihan === 'B').length;
     const kebC        = emps.filter(e => e.kebersihan === 'C').length;
 
-    // ── OVERALL ACHIEVEMENT (all KPI combined) ──
+    // ── OVERALL ACHIEVEMENT ──
     let totalAcvAll = 0, totalTargetAll = 0;
     kpis.forEach(k => {
       totalAcvAll    += emps.reduce((s,e) => s + (e[k.key]?.acv    || 0), 0);
       totalTargetAll += emps.reduce((s,e) => s + (e[k.key]?.target || 0), 0);
     });
-    const overallPct  = totalTargetAll > 0 ? totalAcvAll / totalTargetAll : 0;
-    const overallBarW = Math.max(0, Math.min(100, overallPct * 100));
+    const overallPct   = totalTargetAll > 0 ? totalAcvAll / totalTargetAll : 0;
+    const overallBarW  = Math.max(0, Math.min(100, overallPct * 100));
     const overallColor = overallPct >= 1 ? '#6ee7b7' : overallPct >= 0.6 ? '#fbbf24' : '#f87171';
 
-    // ── KPI AGGREGATE ROWS ──
-    const kpiRows = kpis.map(k => {
+    const isExpanded = expandedEraCards.has(toko);
+
+    // ── KPI DETAIL CARDS (same style as rank card detail) ──
+    const kpiDetailCards = kpis.map(k => {
       const totalM1     = emps.reduce((s,e) => s + (e[k.key]?.m1     || 0), 0);
       const totalAcv    = emps.reduce((s,e) => s + (e[k.key]?.acv    || 0), 0);
       const totalTarget = emps.reduce((s,e) => s + (e[k.key]?.target || 0), 0);
       const totalGap    = emps.reduce((s,e) => s + (e[k.key]?.gap    || 0), 0);
       const totalGapMom = emps.reduce((s,e) => s + (e[k.key]?.gap_mom || 0), 0);
-      const mom  = totalM1 > 0 ? (totalAcv - totalM1) / totalM1 : 0;
-      const pct  = totalTarget > 0 ? totalAcv / totalTarget : 0;
-      const barW = Math.max(0, Math.min(100, pct * 100));
+      const mom      = totalM1 > 0 ? (totalAcv - totalM1) / totalM1 : 0;
+      const pct      = totalTarget > 0 ? totalAcv / totalTarget : 0;
+      const barW     = Math.max(0, Math.min(100, pct * 100));
       const barColor = pct >= 1 ? '#6ee7b7' : pct >= 0.5 ? '#fbbf24' : '#f87171';
-
       return `
-        <div class="eg-kpi-row">
-          <div class="eg-kpi-name">
-            <span class="eg-kpi-dot" style="background:${k.color}"></span>
-            ${k.name}
+        <div class="kpi-detail-card">
+          <div class="kd-header">
+            <span class="kd-name" style="display:flex;align-items:center;gap:5px;">
+              <span style="width:7px;height:7px;border-radius:50%;background:${k.color};flex-shrink:0;display:inline-block;"></span>
+              ${k.name}
+            </span>
           </div>
-          <div class="eg-kpi-vals">
-            <div class="eg-kpi-val-group">
-              <span class="eg-kv-label">M-1</span>
-              <span class="eg-kv-num">${totalM1.toLocaleString('id-ID')}</span>
-            </div>
-            <div class="eg-kpi-val-group">
-              <span class="eg-kv-label">ACV</span>
-              <span class="eg-kv-num">${totalAcv.toLocaleString('id-ID')}</span>
-            </div>
-            <div class="eg-kpi-val-group">
-              <span class="eg-kv-label">Target</span>
-              <span class="eg-kv-num">${totalTarget.toLocaleString('id-ID')}</span>
-            </div>
-            <div class="eg-kpi-val-group">
-              <span class="eg-kv-label">MoM</span>
-              <span class="eg-kv-num ${mom >= 0 ? 'pos' : 'neg'}">${mom >= 0 ? '+' : ''}${(mom * 100).toFixed(1)}%</span>
-            </div>
-            <div class="eg-kpi-val-group">
-              <span class="eg-kv-label">Gap MoM</span>
-              <span class="eg-kv-num ${totalGapMom >= 0 ? 'pos' : 'neg'}">${totalGapMom >= 0 ? '+' : ''}${totalGapMom.toLocaleString('id-ID')}</span>
-            </div>
-            <div class="eg-kpi-val-group">
-              <span class="eg-kv-label">Gap Target</span>
-              <span class="eg-kv-num ${totalGap >= 0 ? 'pos' : 'neg'}">${totalGap >= 0 ? '+' : ''}${totalGap.toLocaleString('id-ID')}</span>
-            </div>
-            <div class="eg-kpi-val-group">
-              <span class="eg-kv-label">ACV%</span>
-              <span class="eg-kv-num" style="color:${barColor}">${(pct * 100).toFixed(1)}%</span>
-            </div>
-          </div>
-          <div class="eg-kpi-bar-wrap">
-            <div class="eg-kpi-bar">
-              <div class="eg-kpi-bar-fill" style="width:${barW}%;background:${barColor}"></div>
-            </div>
-          </div>
+          <div class="kd-row"><span class="kd-row-label">M-1</span><span class="kd-row-val">${totalM1.toLocaleString('id-ID')}</span></div>
+          <div class="kd-row"><span class="kd-row-label">ACV</span><span class="kd-row-val ${totalAcv > 0 ? 'pos' : ''}">${totalAcv.toLocaleString('id-ID')}</span></div>
+          <div class="kd-row"><span class="kd-row-label">Target</span><span class="kd-row-val">${totalTarget.toLocaleString('id-ID')}</span></div>
+          <div class="kd-row"><span class="kd-row-label">MoM</span><span class="kd-row-val ${mom >= 0 ? 'pos' : 'neg'}">${mom >= 0 ? '+' : ''}${(mom * 100).toFixed(1)}%</span></div>
+          <div class="kd-row"><span class="kd-row-label">Gap MoM</span><span class="kd-row-val ${totalGapMom >= 0 ? 'pos' : 'neg'}">${totalGapMom >= 0 ? '+' : ''}${totalGapMom.toLocaleString('id-ID')}</span></div>
+          <div class="kd-divider"></div>
+          <div class="kd-row"><span class="kd-row-label">Gap Target</span><span class="kd-row-val ${totalGap >= 0 ? 'pos' : 'neg'}">${totalGap.toLocaleString('id-ID')}</span></div>
+          <div class="kd-row"><span class="kd-row-label">ACV%</span><span class="kd-row-val" style="color:${barColor}">${(pct * 100).toFixed(1)}%</span></div>
+          ${buildKpiBar(barW / 100, k.color)}
         </div>
       `;
     }).join('');
 
-    // ── EMPLOYEE CARDS ──
-    const empCards = sortedEmps.map(emp => {
-      const tc       = TOKO_COLORS[emp.toko] || '#888';
-      const scoreClr = emp.score_akhir >= 0 ? 'var(--accent)' : 'var(--red)';
-      const barW2    = Math.max(2, Math.min(100, (emp.score_akhir + 0.5) / 1.0 * 100));
-      const barClr2  = emp.score_akhir >= 0 ? '#6ee7b7' : '#f87171';
+    // ── EMPLOYEE ROWS (leaderboard style, pakai warna toko) ──
+    const empRows = sortedEmps.map(emp => {
+      const barW2   = Math.max(2, Math.min(100, (emp.score_akhir + 0.5) / 1.0 * 100));
+      const barClr2 = emp.score_akhir >= 0 ? '#6ee7b7' : '#f87171';
       const isPunish = emp.keterangan === 'punishment';
       const idx      = DATA.indexOf(emp);
-
+      const badgeClass = getRankBadgeClass(emp.rank_akhir);
       return `
-        <div class="eg-emp-card ${isPunish ? 'punished' : ''}" onclick="openModal(${idx})">
-          <div class="eg-emp-top">
-            <div class="eg-emp-avatar" style="background:${tc}22;border-color:${tc}44;color:${tc}">
-              ${emp.nama.charAt(0)}
-            </div>
-            <div class="eg-emp-info">
-              <div class="eg-emp-name">${emp.nama}</div>
-            </div>
-            <div class="eg-emp-rank">
-              ${emp.rank_akhir > 0
-                ? `<div class="eg-rank-badge ${getRankBadgeClass(emp.rank_akhir)}">#${emp.rank_akhir}</div>`
-                : `<div class="eg-rank-badge rz">—</div>`
-              }
+        <div class="era-lb-row ${isPunish ? 'punished' : ''}" onclick="openModal(${idx})">
+          <div class="rank-badge ${badgeClass}" style="width:36px;height:36px;font-size:13px;flex-shrink:0;">
+            ${emp.rank_akhir > 0 ? '#' + emp.rank_akhir : '—'}
+          </div>
+          <div class="emp-info" style="flex:1;min-width:0;">
+            <div class="emp-name">${emp.nama}</div>
+            <div class="emp-meta">
+              Shift ${emp.shift}
+              ${emp.kebersihan ? '&nbsp;' + kebBadge(emp.kebersihan) : ''}
+              ${isPunish ? `&nbsp;<span class="status-pill punishment">Punishment</span>` : ''}
             </div>
           </div>
-          ${isPunish ? `<div class="eg-emp-punishment-tag">⚠ Punishment</div>` : ''}
+          <div class="score-bar-wrap" style="min-width:90px;max-width:120px;">
+            <div class="score-bar-label">
+              <span>Score</span>
+              <span>${fmtPct(emp.score_akhir)}</span>
+            </div>
+            <div class="score-bar-track">
+              <div class="score-bar-fill" style="width:${barW2}%;background:${barClr2}"></div>
+            </div>
+          </div>
+          <div class="expand-icon" style="color:var(--text3);font-size:14px;flex-shrink:0;">›</div>
         </div>
       `;
     }).join('');
 
-    // ── FINAL RENDER DENGAN BUTTON TOGGLE ──
-    return `
-      <div class="eg-card collapsed" style="--toko-color:${color}">
-        <!-- STORE HEADER dengan Tombol Toggle -->
-        <div class="eg-header collapsed">
-          <div class="eg-header-left">
-            <div class="eg-toko-badge" style="background:${color}22;border-color:${color}55;color:${color}">
-              ${toko.replace('ERA ','')}
-            </div>
-            <div>
-              <div class="eg-toko-name">${toko}</div>
-              <div class="eg-toko-sub">${emps.length} shift aktif</div>
-            </div>
-          </div>
+    // Rank toko badge label: top 3 pakai medali, sisanya angka
+    const tokoRankLabel = tokoRank <= 3 ? medalLabel[tokoRank - 1] : '#' + tokoRank;
 
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div class="eg-overall-wrap">
-              <div class="eg-overall-label">
-                <span>Overall ACV</span>
-                <span style="color:${overallColor};font-weight:700">${(overallPct * 100).toFixed(1)}%</span>
-              </div>
-              <div class="eg-overall-bar">
-                <div class="eg-overall-fill" style="width:${overallBarW}%;background:${overallColor}"></div>
-              </div>
+    return `
+      <div class="era-lb-card ${isExpanded ? 'expanded' : ''}" id="era-card-${toko.replace(' ','-')}"
+           style="border-color:${cardBd};">
+        <div class="era-lb-header" onclick="toggleEraCard('${toko}')"
+             style="background:${headerBg};">
+          <!-- Rank toko badge -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;">
+            <div class="rank-badge" style="width:40px;height:40px;background:${badgeBg};border:0.5px solid ${badgeBd};color:${color};font-weight:800;font-size:${tokoRank <= 3 ? '18' : '15'}px;">
+              ${tokoRankLabel}
             </div>
-            <button class="eg-toggle-btn" onclick="toggleEraCard(this)">▼</button>
           </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:15px;font-weight:700;letter-spacing:-0.3px;color:${color};">${toko}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px;">
+              ${emps.length} shift &nbsp;·&nbsp; Best Global: ${bestRank ? '#' + bestRank : '—'} &nbsp;·&nbsp; Punishment: ${punishCount}
+            </div>
+          </div>
+          <div class="score-bar-wrap" style="min-width:110px;max-width:180px;">
+            <div class="score-bar-label">
+              <span style="color:var(--text3)">Overall ACV</span>
+              <span style="color:${color};font-weight:700">${(overallPct * 100).toFixed(1)}%</span>
+            </div>
+            <div class="score-bar-track">
+              <div class="score-bar-fill" style="width:${overallBarW}%;background:${color}"></div>
+            </div>
+          </div>
+          <div class="expand-icon" style="color:${color};">▾</div>
         </div>
 
-        <!-- KONTEN YANG BISA DI-COLLAPSE -->
-        <div class="eg-collapsible-content">
-          <div class="eg-chips">
-            <div class="eg-chip">
-              <div class="eg-chip-label">Avg Score</div>
-              <div class="eg-chip-val" style="color:${avgScore >= 0 ? 'var(--accent)' : 'var(--red)'}">
-                ${fmtPct(avgScore)}
-              </div>
+        <div class="era-lb-detail">
+          <!-- SUMMARY CHIPS -->
+          <div class="detail-summary" style="margin:0 0 12px;">
+            <div class="ds-item">
+              <div class="ds-label">Avg Score</div>
+              <div class="ds-val ${avgScore >= 0 ? 'green' : 'red'}">${fmtPct(avgScore)}</div>
             </div>
-            <div class="eg-chip">
-              <div class="eg-chip-label">Best Rank</div>
-              <div class="eg-chip-val" style="color:var(--gold)">
-                ${bestRank ? '#' + bestRank : '—'}
-              </div>
+            <div class="ds-item">
+              <div class="ds-label">Best Rank</div>
+              <div class="ds-val gold">${bestRank ? '#' + bestRank : '—'}</div>
             </div>
-            <div class="eg-chip">
-              <div class="eg-chip-label">Punishment</div>
-              <div class="eg-chip-val" style="color:${punishCount > 0 ? 'var(--red)' : 'var(--text3)'}">
-                ${punishCount}
-              </div>
+            <div class="ds-item">
+              <div class="ds-label">Punishment</div>
+              <div class="ds-val ${punishCount > 0 ? 'red' : 'neutral'}">${punishCount}</div>
             </div>
-            <div class="eg-chip">
-              <div class="eg-chip-label">Kebersihan</div>
-              <div class="eg-chip-val eg-chip-keb">
+            <div class="ds-item">
+              <div class="ds-label">Kebersihan</div>
+              <div class="ds-val" style="font-size:13px;display:flex;gap:6px;align-items:center;font-family:inherit;">
                 <span style="color:#6ee7b7">A:${kebA}</span>
-                <span class="eg-keb-dot">·</span>
+                <span style="color:var(--text3)">·</span>
                 <span style="color:#fbbf24">B:${kebB}</span>
-                <span class="eg-keb-dot">·</span>
+                <span style="color:var(--text3)">·</span>
                 <span style="color:#f87171">C:${kebC}</span>
               </div>
             </div>
           </div>
 
-          <div class="eg-section-label">Rekapitulasi KPI</div>
-          <div class="eg-kpi-table">
-            <div class="eg-kpi-table-head">
-              <div class="eg-kth eg-kth-name">Kategori</div>
-              <div class="eg-kth">M-1</div>
-              <div class="eg-kth">ACV</div>
-              <div class="eg-kth">Target</div>
-              <div class="eg-kth">MoM</div>
-              <div class="eg-kth">Gap MoM</div>
-              <div class="eg-kth">Gap Target</div>
-              <div class="eg-kth">ACV%</div>
-            </div>
-            <div class="eg-kpi-rows">
-              ${kpiRows}
-            </div>
-          </div>
+          <!-- KPI DETAIL CARDS -->
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:8px;">Rekapitulasi KPI</div>
+          <div class="detail-grid" style="margin-bottom:14px;">${kpiDetailCards}</div>
 
-          <div class="eg-kpi-cards-mobile">
-            ${kpis.map(k => {
-              const totalM1     = emps.reduce((s,e) => s + (e[k.key]?.m1     || 0), 0);
-              const totalAcv    = emps.reduce((s,e) => s + (e[k.key]?.acv    || 0), 0);
-              const totalTarget = emps.reduce((s,e) => s + (e[k.key]?.target || 0), 0);
-              const totalGap    = emps.reduce((s,e) => s + (e[k.key]?.gap    || 0), 0);
-              const totalGapMom = emps.reduce((s,e) => s + (e[k.key]?.gap_mom || 0), 0);
-              const mom = totalM1 > 0 ? (totalAcv - totalM1) / totalM1 : 0;
-              const pct = totalTarget > 0 ? totalAcv / totalTarget : 0;
-              const barW = Math.max(0, Math.min(100, pct * 100));
-              const barColor = pct >= 1 ? '#6ee7b7' : pct >= 0.5 ? '#fbbf24' : '#f87171';
-              return `
-                <div class="eg-kpi-mcard">
-                  <div class="eg-kpi-mcard-head">
-                    <span class="eg-kpi-dot" style="background:${k.color}"></span>
-                    <span class="eg-kpi-mcard-name">${k.name}</span>
-                  </div>
-                  <div class="eg-kpi-mcard-grid">
-                    <div class="eg-kpi-mcard-item"><span>M-1</span><strong>${totalM1.toLocaleString('id-ID')}</strong></div>
-                    <div class="eg-kpi-mcard-item"><span>Target</span><strong>${totalTarget.toLocaleString('id-ID')}</strong></div>
-                    <div class="eg-kpi-mcard-item"><span>Acv</span><strong>${totalAcv.toLocaleString('id-ID')}</strong></div>
-                    <div class="eg-kpi-mcard-item"><span>Gap MoM</span><strong class="${totalGapMom >= 0 ? 'pos' : 'neg'}">${totalGapMom >= 0 ? '+' : ''}${totalGapMom.toLocaleString('id-ID')}</strong></div>
-                    <div class="eg-kpi-mcard-item last"><span>Gap Target</span><strong class="${totalGap >= 0 ? 'pos' : 'neg'}">${totalGap >= 0 ? '+' : ''}${totalGap.toLocaleString('id-ID')}</strong></div>
-                    <div class="eg-kpi-mcard-item last"><span>Acv%</span><strong class="${totalGap >= 0 ? 'pos' : 'neg'}">${(pct * 100).toFixed(1)}%</strong></div>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-
-          <div class="eg-section-label">Karyawan</div>
-          <div class="eg-emp-grid">
-            ${empCards}
-          </div>
+          <!-- EMPLOYEE LEADERBOARD ROWS -->
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:8px;">Karyawan</div>
+          <div class="era-lb-emp-list">${empRows}</div>
         </div>
       </div>
     `;
-
   }).join('');
 }
 
@@ -802,20 +765,14 @@ function switchTab(name, e) {
   document.getElementById('tab-' + name).classList.add('active');
 }
 
-// ── TOGGLE ERA CARD (SEDERHANA) ──────────────────────
-function toggleEraCard(buttonElement) {
-  // Cari card terdekat
-  const card = buttonElement.closest('.eg-card');
-  if (!card) return;
-  
-  // Toggle class collapsed
-  if (card.classList.contains('collapsed')) {
-    card.classList.remove('collapsed');
-    buttonElement.textContent = '▲';
+// ── TOGGLE ERA CARD ──────────────────────────────────
+function toggleEraCard(toko) {
+  if (expandedEraCards.has(toko)) {
+    expandedEraCards.delete(toko);
   } else {
-    card.classList.add('collapsed');
-    buttonElement.textContent = '▼';
+    expandedEraCards.add(toko);
   }
+  buildEraGroups();
 }
 
 window.switchTab = switchTab;

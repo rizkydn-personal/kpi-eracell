@@ -56,17 +56,18 @@
     <!-- FILTER & SEARCH -->
     <div class="filter-bar">
       <span class="filter-label">Filter:</span>
-      <button class="filter-btn active" onclick="filterByToko('all', event)">Semua</button>
-      <button class="filter-btn" onclick="filterByToko('ERA 1', event)">ERA 1</button>
-      <button class="filter-btn" onclick="filterByToko('ERA 2', event)">ERA 2</button>
-      <button class="filter-btn" onclick="filterByToko('ERA 3', event)">ERA 3</button>
-      <button class="filter-btn" onclick="filterByToko('ERA 4', event)">ERA 4</button>
-      <button class="filter-btn" onclick="filterByToko('ERA 5', event)">ERA 5</button>
-      <button class="filter-btn" onclick="filterByToko('ERA 6', event)">ERA 6</button>
-      <button class="filter-btn" onclick="filterByToko('ERA 7', event)">ERA 7</button>
-      <button class="filter-btn" onclick="filterByToko('ERA 8', event)">ERA 8</button>
-      <button class="filter-btn" onclick="filterByToko('ERA 9', event)">ERA 9</button>
-      <div class="filter-divider"></div>
+      <div class="filter-btn-row">
+        <button class="filter-btn active" onclick="filterByToko('all', event)">Semua</button>
+        <button class="filter-btn" onclick="filterByToko('ERA 1', event)">ERA 1</button>
+        <button class="filter-btn" onclick="filterByToko('ERA 2', event)">ERA 2</button>
+        <button class="filter-btn" onclick="filterByToko('ERA 3', event)">ERA 3</button>
+        <button class="filter-btn" onclick="filterByToko('ERA 4', event)">ERA 4</button>
+        <button class="filter-btn" onclick="filterByToko('ERA 5', event)">ERA 5</button>
+        <button class="filter-btn" onclick="filterByToko('ERA 6', event)">ERA 6</button>
+        <button class="filter-btn" onclick="filterByToko('ERA 7', event)">ERA 7</button>
+        <button class="filter-btn" onclick="filterByToko('ERA 8', event)">ERA 8</button>
+        <button class="filter-btn" onclick="filterByToko('ERA 9', event)">ERA 9</button>
+      </div>
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
         <input type="text" placeholder="Cari nama..." id="searchInput" oninput="filterBySearch()">

@@ -190,21 +190,26 @@ body {
 
 /* ── FILTER BAR ─────────────────────────────────────── */
 .filter-bar {
-  display: flex; gap: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
   margin-bottom: 1.5rem;
-  flex-wrap: wrap; align-items: center;
 }
 .filter-label {
   font-size: 12px; color: var(--text3);
   font-weight: 500; letter-spacing: 0.5px;
-  text-transform: uppercase; margin-right: 4px;
+  text-transform: uppercase;
+  flex-shrink: 0;
 }
 .filter-btn {
   padding: 6px 14px; border-radius: 20px;
   border: 0.5px solid var(--border2);
   background: var(--bg3); color: var(--text2);
   cursor: pointer; font-family: inherit;
-  font-size: 13px; font-weight: 500; transition: all 0.15s;
+  font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .filter-btn:hover { background: var(--bg4); border-color: rgba(255,255,255,0.2); color: var(--text); }
 .filter-btn.active {
@@ -212,10 +217,25 @@ body {
   border-color: rgba(110,231,183,0.4);
   color: var(--accent);
 }
-.filter-divider { width: 0.5px; height: 24px; background: var(--border); margin: 0 4px; }
+.filter-divider { width: 0.5px; height: 24px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
+
+/* Scrollable row wrapper for buttons */
+.filter-btn-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.filter-btn-row::-webkit-scrollbar {
+  display: none;
+}
+
 
 /* ── SEARCH ─────────────────────────────────────────── */
-.search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 300px; }
+.search-wrap { position: relative; flex: 1; min-width: 160px; max-width: 320px; }
 .search-wrap input {
   width: 100%; background: var(--bg3);
   border: 0.5px solid var(--border2); border-radius: var(--r2);
@@ -477,387 +497,75 @@ body {
 .tab-content        { display: none; }
 .tab-content.active { display: block; }
 
-/* ── ERA GROUP (Per Toko) ────────────────────────────── */
-.era-group-card {
-  background: var(--bg3); border: 0.5px solid var(--border);
-  border-radius: var(--r); margin-bottom: 12px; overflow: hidden;
-}
-.era-group-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px; background: var(--bg4);
-  border-bottom: 0.5px solid var(--border); cursor: pointer;
-}
-.era-group-name  { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-.era-dot         { width: 8px; height: 8px; border-radius: 50%; }
-.era-group-stats { font-size: 12px; color: var(--text3); display: flex; gap: 16px; }
-.era-group-body  { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-
-/* =====================================================
-   NEW ERA GROUP CARD SYSTEM
-===================================================== */
-
-.eg-card {
+/* ── ERA GROUP (Per Toko) — Leaderboard Style ────────── */
+.era-lb-card {
   background: var(--bg3);
   border: 0.5px solid var(--border);
-  border-top: 3px solid var(--toko-color, #888);
   border-radius: var(--r);
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   overflow: hidden;
+  transition: border-color 0.15s;
 }
+.era-lb-card:hover       { border-color: var(--border2); }
+.era-lb-card.expanded    { border-color: rgba(110,231,183,0.35); }
 
-/* ── STORE HEADER ── */
-.eg-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 20px 14px;
-  background: var(--bg4);
-  border-bottom: 0.5px solid var(--border);
-  flex-wrap: wrap;
-}
-
-.eg-header-left {
-  display: flex;
+.era-lb-header {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto;
   align-items: center;
   gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
 }
+.era-lb-header:hover { background: var(--bg4); }
 
-.eg-toko-badge {
-  width: 40px; height: 40px;
-  border-radius: 10px;
-  border: 1px solid;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 15px;
-  flex-shrink: 0;
+.era-lb-card.expanded .expand-icon { transform: rotate(180deg); }
+
+.era-lb-detail {
+  display: none;
+  padding: 12px 16px 16px;
+  border-top: 0.5px solid var(--border);
 }
+.era-lb-card.expanded .era-lb-detail { display: block; }
 
-.eg-toko-name {
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-}
-
-.eg-toko-sub {
-  font-size: 11px;
-  color: var(--text3);
-  margin-top: 1px;
-}
-
-.eg-overall-wrap {
-  flex: 1;
-  min-width: 180px;
-  max-width: 280px;
-}
-
-.eg-overall-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--text3);
-  margin-bottom: 5px;
-  font-weight: 500;
-  gap: 5px;
-}
-
-.eg-overall-bar {
-  height: 6px;
-  background: var(--bg3);
-  border-radius: 999px;
-  overflow: hidden;
-  border: 0.5px solid var(--border);
-}
-
-.eg-overall-fill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.6s ease;
-}
-
-/* ── SUMMARY CHIPS ── */
-.eg-chips {
-  display: flex;
-  gap: 8px;
-  padding: 12px 20px;
-  border-bottom: 0.5px solid var(--border);
-  flex-wrap: wrap;
-}
-
-.eg-chip {
-  flex: 1;
-  min-width: 90px;
-  background: var(--bg4);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r2);
-  padding: 8px 12px;
-  text-align: center;
-}
-
-.eg-chip-label {
-  font-size: 10px;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-bottom: 4px;
-}
-
-.eg-chip-val {
-  font-size: 16px;
-  font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: -0.5px;
-}
-
-.eg-chip-keb {
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-
-.eg-keb-dot {
-  color: var(--text3);
-}
-
-/* ── SECTION LABEL ── */
-.eg-section-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text3);
-  padding: 10px 20px 6px;
-}
-
-/* ── KPI TABLE (Desktop) ── */
-.eg-kpi-table {
-  margin: 0 20px 12px;
-  border: 0.5px solid var(--border);
-  border-radius: var(--r2);
-  overflow: hidden;
-}
-
-.eg-kpi-table-head {
-  display: grid;
-  grid-template-columns: 140px repeat(7, 1fr);
-  background: var(--bg4);
-  border-bottom: 0.5px solid var(--border);
-  padding: 0;
-}
-
-.eg-kth {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--text3);
-  padding: 8px 10px;
-  text-align: right;
-}
-
-.eg-kth.eg-kth-name {
-  text-align: left;
-}
-
-.eg-kpi-rows {
+.era-lb-emp-list {
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
-.eg-kpi-row {
+.era-lb-row {
   display: grid;
-  grid-template-columns: 140px repeat(7, 1fr);
+  grid-template-columns: 36px 1fr auto auto;
   align-items: center;
-  border-bottom: 0.5px solid var(--border);
-  transition: background 0.12s;
-}
-
-.eg-kpi-row:last-child {
-  border-bottom: none;
-}
-
-.eg-kpi-row:hover {
-  background: var(--bg4);
-}
-
-.eg-kpi-name {
-  display: flex;
-  align-items: center;
-  gap: 7px;
+  gap: 10px;
   padding: 10px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text2);
+  background: var(--bg4);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.era-lb-row:hover {
+  background: var(--bg3);
+  border-color: var(--border2);
+  transform: translateX(2px);
+}
+.era-lb-row.punished {
+  border-color: rgba(248,113,113,0.22);
 }
 
+
+
+/* ── ERA KPI helper ── */
 .eg-kpi-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.eg-kpi-vals {
-  display: contents;
-}
 
-.eg-kpi-val-group {
-  padding: 10px 10px;
-  text-align: right;
-}
-
-.eg-kpi-val-group .eg-kv-label { display: none; }
-
-.eg-kv-num {
-  font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 500;
-  color: var(--text);
-  display: block;
-}
-
-.eg-kv-num.pos { color: var(--accent); }
-.eg-kv-num.neg { color: var(--red); }
-
-.eg-kpi-bar-wrap { display: none; }
-
-/* ── KPI MOBILE CARDS ── */
-.eg-kpi-cards-mobile { display: none; }
-
-/* ── EMPLOYEE GRID ── */
-.eg-emp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  padding: 0 20px 20px;
-}
-
-.eg-emp-card {
-  background: var(--bg4);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r2);
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.15s;
-  position: relative;
-  overflow: hidden;
-}
-
-.eg-emp-card:hover {
-  border-color: var(--border2);
-  background: var(--bg3);
-  transform: translateY(-1px);
-}
-
-.eg-emp-card.punished {
-  border-color: rgba(248,113,113,0.25);
-}
-
-.eg-emp-top {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 10px;
-}
-
-.eg-emp-avatar {
-  width: 34px; height: 34px;
-  border-radius: 8px;
-  border: 1px solid;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 14px;
-  flex-shrink: 0;
-}
-
-.eg-emp-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.eg-emp-name {
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.eg-emp-meta {
-  font-size: 11px;
-  color: var(--text3);
-  margin-top: 1px;
-}
-
-.eg-emp-rank {
-  flex-shrink: 0;
-}
-
-.eg-rank-badge {
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.eg-rank-badge.r1  { background: var(--rc1-bg);  color: var(--rc1-fg);  border: 0.5px solid var(--rc1-bd); }
-.eg-rank-badge.r2  { background: var(--rc2-bg);  color: var(--rc2-fg);  border: 0.5px solid var(--rc2-bd); }
-.eg-rank-badge.r3  { background: var(--rc3-bg);  color: var(--rc3-fg);  border: 0.5px solid var(--rc3-bd); }
-.eg-rank-badge.rn  { background: var(--bg3); color: var(--text3); border: 0.5px solid var(--border); }
-.eg-rank-badge.rz  { background: var(--rcz-bg); color: var(--rcz-fg); border: 0.5px solid var(--rcz-bd); }
-
-.eg-emp-score-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.eg-emp-score-label {
-  font-size: 10px;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.eg-emp-score-val {
-  font-size: 14px;
-  font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.eg-emp-bar-track {
-  height: 4px;
-  background: var(--bg3);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.eg-emp-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.5s ease;
-}
-
-.eg-emp-punishment-tag {
-  font-size: 10px;
-  color: var(--red);
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.eg-emp-detail-hint {
-  font-size: 10px;
-  color: var(--text3);
-  text-align: right;
-  margin-top: 2px;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.eg-emp-card:hover .eg-emp-detail-hint {
-  opacity: 1;
-}
 
 /* ── INDIVIDUAL SELECT ───────────────────────────────── */
 #empSelect {
@@ -867,88 +575,6 @@ body {
 }
 
 /* ── RESPONSIVE ──────────────────────────────────────── */
-@media (max-width: 1100px) {
-  .eg-kpi-table-head,
-  .eg-kpi-row {
-    grid-template-columns: 120px repeat(7, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
-  /* Hide desktop KPI table, show mobile cards */
-  .eg-kpi-table      { display: none; }
-  .eg-kpi-cards-mobile { display: flex; flex-direction: column; gap: 8px; margin: 0 16px 12px; }
-
-  .eg-kpi-mcard {
-    background: var(--bg4);
-    border: 0.5px solid var(--border);
-    border-radius: var(--r2);
-    padding: 12px;
-  }
-
-  .eg-kpi-mcard-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .eg-kpi-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-  .eg-kpi-mcard-name {
-    font-size: 13px;
-    font-weight: 700;
-    flex: 1;
-  }
-
-  .eg-kpi-mcard-pct {
-    font-size: 14px;
-    font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .eg-kpi-mcard-bar {
-    height: 5px;
-    background: var(--bg3);
-    border-radius: 999px;
-    overflow: hidden;
-    margin-bottom: 10px;
-  }
-
-  .eg-kpi-mcard-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-  }
-
-  .eg-kpi-mcard-item {
-    background: var(--bg3);
-    border: 0.5px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 8px;
-    text-align: center;
-  }
-
-  .eg-kpi-mcard-item span {
-    display: block;
-    font-size: 9px;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    margin-bottom: 3px;
-  }
-
-  .eg-kpi-mcard-item strong {
-    font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .eg-kpi-mcard-item strong.pos { color: var(--accent); }
-  .eg-kpi-mcard-item strong.neg { color: var(--red); }
-}
-
 @media (max-width: 768px) {
   .header-right {
     display: flex;
@@ -1009,70 +635,22 @@ body {
   }
 
   /* Per Toko mobile */
-  .eg-header {
-    padding: 14px 16px 12px;
+  .era-lb-header {
+    grid-template-columns: 36px 1fr auto;
     gap: 10px;
+    padding: 10px 14px;
   }
-
-  .eg-overall-wrap {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-  }
-
-  .eg-chips {
-    padding: 10px 16px;
-    gap: 6px;
-  }
-
-  .eg-chip {
-    min-width: 70px;
-    padding: 7px 8px;
-  }
-
-  .eg-chip-val {
-    font-size: 14px;
-  }
-
-  .eg-section-label {
-    padding: 10px 16px 6px;
-  }
-
-  .eg-emp-grid {
-    grid-template-columns: 1fr 1fr;
-    padding: 0 16px 16px;
-    gap: 8px;
-  }
-
-  .eg-emp-card {
-    padding: 10px;
-  }
-
-  .eg-emp-name {
-    font-size: 12px;
-  }
-
-  .eg-emp-avatar {
-    width: 28px; height: 28px; font-size: 12px;
-  }
-
-  .eg-kpi-mcard-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .era-lb-header .score-bar-wrap {
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
-  .eg-emp-grid {
-    grid-template-columns: 1fr;
+  .era-lb-row {
+    grid-template-columns: 32px 1fr auto;
   }
-
-  .eg-chips {
-    gap: 4px;
-  }
-
-  .eg-chip {
-    min-width: 60px;
-    flex: 1 1 45%;
+  .era-lb-row .score-bar-wrap {
+    display: none;
   }
 }
 
@@ -1115,134 +693,86 @@ body {
   font-family: 'JetBrains Mono', monospace;
   color: var(--text);
 }
-/* ── ERA GROUP: Employee Rows ─────────────────────── */
-.era-emp-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 10px;
-  border-radius: var(--r2);
-  background: var(--bg4);
-  border: 0.5px solid var(--border);
-  transition: background 0.15s, border-color 0.15s;
+/* ── SMOOTH & RESPONSIVE IMPROVEMENTS ─────────────────── */
+
+/* Smooth scroll + tap highlight */
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.era-emp-row:hover {
-  background: var(--bg3);
-  border-color: var(--border2);
+/* Better touch targets */
+.tab-btn, .filter-btn, .rank-card-top, .era-lb-header, .era-lb-row,
+.podium-card, .eg-emp-card, .modal-close {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
 }
 
-.era-emp-top {
-  background: var(--bg3);
+/* Prevent text zoom on iOS */
+input, select, textarea { font-size: max(16px, 1em); }
+@media (min-width: 480px) {
+  input, select, textarea { font-size: 13px; }
 }
 
-/* =====================================================
-   ERA KPI NEW STYLE
-===================================================== */
+/* ── MOBILE FILTER BAR ──────────────────────────────── */
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
 
-.era-kpi-card{
-  flex:1;
-  min-width:260px;
-  background:var(--bg3);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:12px;
+  .filter-label {
+    display: none; /* label tidak perlu di mobile */
+  }
+
+  .filter-btn-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px;
+    padding-bottom: 2px;
+  }
+  .filter-btn-row::-webkit-scrollbar { display: none; }
+
+  .filter-divider { display: none; }
+
+  .filter-btn {
+    padding: 7px 13px;
+    font-size: 12.5px;
+    flex-shrink: 0;
+  }
+
+  .search-wrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  /* Era leaderboard on mobile */
+  .era-lb-detail { padding: 10px 12px 14px; }
+  .detail-summary { grid-template-columns: repeat(2, 1fr); }
+  .detail-grid    { grid-template-columns: 1fr; }
 }
 
-.era-kpi-title{
-  font-size:13px;
-  font-weight:700;
-  margin-bottom:12px;
+
+/* Stats grid on small screens */
+@media (max-width: 520px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.era-kpi-grid{
-  display:grid;
-  grid-template-columns:
-    repeat(auto-fit,minmax(110px,1fr));
-  gap:8px;
+/* Active state feedback */
+.rank-card-top:active, .era-lb-header:active, .era-lb-row:active,
+.podium-card:active {
+  opacity: 0.85;
 }
 
-.era-kpi-item{
-  background:var(--bg4);
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:8px;
-}
-
-.era-kpi-item span{
-  display:block;
-  font-size:10px;
-  color:var(--text3);
-  margin-bottom:4px;
-}
-
-.era-kpi-item strong{
-  font-size:12px;
-  color:var(--text);
-}
-
-.era-progress{
-  height:4px;
-  background:var(--bg4);
-  border-radius:999px;
-  overflow:hidden;
-  margin-top:12px;
-}
-
-.era-progress-fill{
-  height:100%;
-  border-radius:999px;
-}
-
-.era-emp-simple{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px;
-  background:var(--bg4);
-  border:1px solid var(--border);
-  border-radius:10px;
-}
-
-.era-emp-name{
-  font-size:13px;
-  font-weight:600;
-}
-
-.era-emp-shift{
-  font-size:12px;
-  color:var(--text2);
-}
-
-/* ── TOGGLE BUTTON & COLLAPSE FUNCTION ───────────────── */
-.eg-toggle-btn {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  background: var(--bg4);
-  border: 0.5px solid var(--border);
-  color: var(--text2);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.eg-toggle-btn:hover {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
-}
-
-/* Collapsible content */
-.eg-collapsible-content {
-  transition: all 0.5s ease;
-  overflow: hidden;
-}
-
-.eg-card.collapsed .eg-collapsible-content {
-  display: none;
+/* Smooth expand icon */
+.expand-icon {
+  transition: transform 0.2s ease;
 }
